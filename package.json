@@ -8,6 +8,7 @@
   "dependencies": {
     "express": "3.0.0rc3",
     "jade": "*",
-    "webfinger": "0.1.x"
+    "webfinger": "0.1.x",
+    "step": "0.0.x"
   }
 }
