@@ -2,16 +2,16 @@
  * Module dependencies.
  */
 
-var express = require('express')
-  , Step = require("step")
-  , wf = require("webfinger")
-  , http = require('http')
-  , https = require('https')
-  , url = require('url')
-  , querystring = require('querystring')
-  , path = require('path')
-  , config = require('./config')
-  , crypto = require("crypto");
+var express = require("express"),
+    Step = require("step"),
+    wf = require("webfinger"),
+    http = require("http"),
+    https = require("https"),
+    url = require("url"),
+    querystring = require("querystring"),
+    path = require("path"),
+    config = require("./config"),
+    crypto = require("crypto");
 
 var randomString = function(bytes, callback) {
 
@@ -22,10 +22,6 @@ var randomString = function(bytes, callback) {
             callback(err, null);
         } else {
             str = buf.toString("base64");
-
-            // XXX: optimize me
-
-            // XXX: optimize me
 
             str = str.replace(/\+/g, "-");
             str = str.replace(/\//g, "_");
@@ -39,9 +35,9 @@ var randomString = function(bytes, callback) {
 var app = express();
 
 app.configure(function(){
-  app.set('port', 80);
+  app.set("port", 80);
   app.use(express.favicon());
-  app.use(express.logger('dev'));
+  app.use(express.logger("dev"));
   app.use(express.bodyParser());
   app.use(express.methodOverride());
   app.use(app.router);
@@ -82,8 +78,46 @@ app.get("/lrdd.json", function(req, res) {
 var requests = {
 };
 
-app.post('/dialback', function(req, res, next) {
-    
+app.post("/dialback", function(req, res, next) {
+
+    var host = req.body.host,
+        webfinger = req.body.webfinger,
+        nonce = req.body.nonce,
+        date = req.body.date,
+        url = req.body.url,
+        ms;
+
+    if (!host || host != config.addclient) {
+        res.status(400).send("Incorrect host");
+        return;
+    }
+
+    if (!nonce) {
+        res.status(400).send("No nonce");
+        return;
+    }
+
+    if (!date) {
+        res.status(400).send("No date");
+        return;
+    }
+
+    ms = Date.parse(date);
+
+    if (Math.abs(Date.now() - ms) > 600000) { // 5-minute window
+        res.status(400).send("Invalid date");
+        return;
+    }
+
+    if (requests.hasOwnProperty(url) &&
+        requests[url].hasOwnProperty(ms) &&
+        requests[url][ms].indexOf(nonce) !== -1) {
+        res.status(200).send("OK");
+        return;
+    } else {
+        res.status(400).send("Not my nonce");
+        return;
+    }
 });
 
 function showForm(req, res) {
@@ -107,9 +141,7 @@ app.get("/", function(req, res, next) {
     showForm(res);
 });
 
-var calls = {};
-
-var dialbackCall = function(url, params, callback) {
+var dialbackCall = function(endpoint, params, callback) {
     var now = Date.now();
 
     Step(
@@ -117,41 +149,71 @@ var dialbackCall = function(url, params, callback) {
             randomString(4, this);
         },
         function(err, str) {
+            var options, mod, cb = this;
             if (err) throw err;
-            if (!calls.hasOwnProperty(url)) {
-                calls[url] = {};
+            if (!requests.hasOwnProperty(endpoint)) {
+                requests[endpoint] = {};
             }
-            if (!calls[url].hasOwnProperty(now)) {
-                calls[url][now] = [];
+            if (!requests[endpoint].hasOwnProperty(now)) {
+                requests[endpoint][now] = [];
             }
-            calls[url][now].push(str);
-        }
+            requests[endpoint][now].push(str);
+            options = url.parse(endpoint);
+            options.method = "POST";
+            options.headers = {
+                authorization: "Dialback host=\"" + config.addclient + "\" nonce=\"" + str + "\"",
+                date: (new Date(now)).toUTCString()
+            };
+            mod = (options.protocol == "https://") ? https : http;
+            var req = mod.request(options, function(res) {
+                var body = "";
+                res.setEncoding("utf8");
+                res.on("data", function(chunk) {
+                    body = body + chunk;
+                });
+                res.on("error", function(err) {
+                    cb(err, null, null);
+                });
+                res.on("end", function() {
+                    cb(null, body, res);
+                });
+            });
+
+            req.on("error", function(err) {
+                cb(err, null, null);
+            });
+
+            req.write(querystring.stringify(params));
+
+            req.end();
+        },
+        callback
     );
 };
 
 app.post("/", function(req, res, next) {
     var augend = parseInt(req.body.augend, 10),
         addend = parseInt(req.body.addend, 10),
-        url = "http://" + config.addserver + "/add";
+        endpoint = "http://" + config.addserver + "/add";
         
     Step(
         function() {
-            dialbackCall(url, {augend: augend, addend: addend}, this);
+            dialbackCall(endpoint, {augend: augend, addend: addend}, this);
         },
         function(err, body, res) {
             if (err) {
                 next(err);
             } else {
-                showForm(res, augend, addend, body.result);
+                showForm(res, augend, addend, parseInt(body, 10));
             }
         }
     );
 });
 
-app.configure('development', function(){
+app.configure("development", function(){
   app.use(express.errorHandler());
 });
 
-http.createServer(app).listen(app.get('port'), function(){
-  console.log("Express server listening on port " + app.get('port'));
+http.createServer(app).listen(app.get("port"), function(){
+  console.log("Express server listening on port " + app.get("port"));
 });

@@ -2,14 +2,15 @@
  * Module dependencies.
  */
 
-var express = require('express')
-  , Step = require("step")
-  , wf = require("webfinger")
-  , http = require('http')
-  , https = require('https')
-  , url = require('url')
-  , querystring = require('querystring')
-  , path = require('path');
+var express = require('express'),
+    Step = require("step"),
+    wf = require("webfinger"),
+    http = require('http'),
+    https = require('https'),
+    url = require('url'),
+    querystring = require('querystring'),
+    path = require('path'),
+    config = require("./config");
 
 var app = express();
 
@@ -78,10 +79,33 @@ var discoverEndpoint = function(fields, callback) {
     }
 };
 
-var postToEndpoint = function(endpoint, fields, callback) {
+var postToEndpoint = function(endpoint, params, callback) {
     var options = url.parse(endpoint);
     options.method = "POST";
 
+    var mod = (options.protocol == "https://") ? https : http;
+
+    var req = mod.request(options, function(res) {
+        var body = "";
+        res.setEncoding("utf8");
+        res.on("data", function(chunk) {
+            body = body + chunk;
+        });
+        res.on("error", function(err) {
+            callback(err, null, null);
+        });
+        res.on("end", function() {
+            callback(null, body, res);
+        });
+    });
+
+    req.on("error", function(err) {
+        callback(err, null, null);
+    });
+
+    req.write(querystring.stringify(params));
+
+    req.end();
 };
 
 var dialback = function(req, res, next) {
@@ -168,7 +192,7 @@ var dialback = function(req, res, next) {
 };
 
 app.configure(function(){
-  app.set('port', process.env.PORT || 3000);
+  app.set('port', 80);
   app.use(express.favicon());
   app.use(express.logger('dev'));
   app.use(express.bodyParser());
