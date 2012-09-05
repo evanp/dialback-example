@@ -85,7 +85,7 @@ var postToEndpoint = function(endpoint, params, callback) {
 
     options.method = "POST";
     options.headers = {
-        "content-type": "application/www-url-encoded"
+        "Content-Type": "application/x-www-form-urlencoded"
     };
 
     var mod = (options.protocol == "https://") ? https : http;
