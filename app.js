@@ -184,10 +184,8 @@ var dialback = function(req, res, next) {
             if (err) throw err;
             postToEndpoint(endpoint, fields, this);
         },
-        function(err, res) {
+        function(err, body, res) {
             if (err) {
-                next(err);
-            } else if (res.statusCode !== 200) {
                 unauthorized();
             } else if (fields.hasOwnProperty("host")) {
                 req.host = fields.host;
@@ -219,6 +217,8 @@ app.configure('development', function(){
 
 var add = function(req, res, next) {
     var augend, addend;
+
+    console.log(((req.host) ? req.host : req.webfinger) + " added " + augend + " plus " + addend);
 
     try {
         augend = parseInt(req.body.augend, 10);
