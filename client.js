@@ -118,7 +118,7 @@ app.post("/dialback", function(req, res, next) {
 
     ms = Date.parse(date);
 
-    if (Math.abs(Date.now() - ms) > 600000) { // 5-minute window
+    if (Math.abs(Date.now() - ms) > 300000) { // 5-minute window
         res.status(400).send("Invalid date");
         return;
     }
