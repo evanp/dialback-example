@@ -128,9 +128,9 @@ function showForm(res, augend, addend, result) {
              "<body>" +
              "<h1>Add two numbers</h1>" +
              "<form action='/' method='post'>" +
-             ((augend) ? "<input type='text' name='augend' size='3' value='"+augend+"' /> + " : "<input type='text' name='augend' size='3'/> + ") +
-             ((addend) ? "<input type='text' name='addend' size='3' value='"+addend+"' /> = " : "<input type='text' name='augend' size='3'/> + ") +
-             ((result) ? "<input type='text' name='result' size='3' value='"+result+"' /> = " : "<input type='text' name='result' size='3'/> + ") +
+             ((augend) ? "<input type='text' name='augend' size='3' value='"+augend+"' />" : "<input type='text' name='augend' size='3'/>") + " + " +
+             ((addend) ? "<input type='text' name='addend' size='3' value='"+addend+"' /> = " : "<input type='text' name='addend' size='3'/> ") + " = " +
+             ((result) ? "<input type='text' name='result' size='3' value='"+result+"' /> " : "<input type='text' name='result' size='3'/> ") +
              "<input type='submit' />" +
              "</form>" +
              "</body>" +
