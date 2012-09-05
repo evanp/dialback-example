@@ -100,7 +100,7 @@ var saveRequest = function(id, endpoint, ms, nonce) {
         requests[id][endpoint] = {};
     }
     if (!requests[id][endpoint].hasOwnProperty(ms)) {
-        requests[id][endpoint][id] = [];
+        requests[id][endpoint][ms] = [];
     }
     requests[id][endpoint][ms].push(nonce);
 };
