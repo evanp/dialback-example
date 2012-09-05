@@ -131,9 +131,65 @@ var postToEndpoint = function(endpoint, params, callback) {
     req.end();
 };
 
+var requests = {
+};
+
+var saveRequest = function(id, url, date, nonce) {
+
+    var ms = Date.parse(date);
+
+    if (!requests.haveOwnProperty(id)) {
+        requests[id] = {};
+    }
+
+    if (!requests[id].haveOwnProperty(url)) {
+        requests[id][url] = {};
+    }
+
+    if (!requests[id][url].haveOwnProperty(ms)) {
+        requests[id][url][ms] = [];
+    }
+
+    requests[id][url][ms].push(nonce);
+};
+
+var seenRequest = function(id, url, date, nonce) {
+
+    var ms = Date.parse(date);
+
+    return (requests.haveOwnProperty(id) &&
+            requests[id].haveOwnProperty(url) &&
+            requests[id][url].haveOwnProperty(ms) &&
+            requests[id][url][ms].indexOf(nonce) !== -1);
+};
+
+// Clear out old requests every 1 minute
+
+setTimeout(function() {
+    var id, url, ms, now = Date.now(), toDel, i;
+    
+    for (id in requests) {
+        for (url in requests[id]) {
+            toDel = [];
+            for (ms in requests[id][url]) {
+                if (Math.abs(now - ms) > 600000) {
+                    toDel.push(ms);
+                }
+            }
+            for (i = 0; i < toDel.length; i++) {
+                console.log("Discarding request data for "+id+" requesting "+url+" at "+(new Date(toDel[i])).toUTCString());
+                delete requests[id][url][toDel[i]];
+            }
+        }
+        // XXX: clear out empty requests[id][url] and requests[id]
+    }
+
+}, 60000);
+
 var dialback = function(req, res, next) {
 
     var auth,
+        now = Date.now(),
         fields,
         unauthorized = function() {
             res.status(401);
@@ -186,9 +242,30 @@ var dialback = function(req, res, next) {
 
     fields.url = "http://" + config.addserver + req.originalUrl;
     
-    if (req.headers.hasOwnProperty("date")) {
-        fields.date = req.headers.date;
+    if (!req.headers.hasOwnProperty("date")) {
+        unauthorized();
+        return;
     }
+
+    fields.date = req.headers.date;
+
+    if (Math.abs(Date.parse(fields.date) - now) > 300000) { // 5-minute window
+        unauthorized();
+        return;
+    }
+
+    if (seenRequest(fields.host || fields.webfinger, 
+                    fields.url,
+                    fields.date,
+                    fields.nonce)) {
+        unauthorized();
+        return;
+    }
+
+    saveRequest(fields.host || fields.webfinger, 
+                fields.url,
+                fields.date,
+                fields.nonce);
 
     Step(
         function() {

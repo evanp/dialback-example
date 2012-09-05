@@ -92,6 +92,40 @@ app.get("/lrdd.json", function(req, res) {
 var requests = {
 };
 
+var saveRequest = function(id, endpoint, ms, nonce) {
+    if (!requests.hasOwnProperty(id)) {
+        requests[id] = {};
+    }
+    if (!requests[id].hasOwnProperty(endpoint)) {
+        requests[id][endpoint] = {};
+    }
+    if (!requests[id][endpoint].hasOwnProperty(ms)) {
+        requests[id][endpoint][id] = [];
+    }
+    requests[id][endpoint][ms].push(nonce);
+};
+
+setTimeout(function() {
+    var id, url, ms, now = Date.now(), toDel, i;
+    
+    for (id in requests) {
+        for (url in requests[id]) {
+            toDel = [];
+            for (ms in requests[id][url]) {
+                if (Math.abs(now - ms) > 600000) {
+                    toDel.push(ms);
+                }
+            }
+            for (i = 0; i < toDel.length; i++) {
+                console.log("Discarding request data for "+id+" requesting "+url+" at "+(new Date(toDel[i])).toUTCString());
+                delete requests[id][url][toDel[i]];
+            }
+        }
+        // XXX: clear out empty requests[id][url] and requests[id]
+    }
+
+}, 60000);
+
 app.post("/dialback", function(req, res, next) {
 
     var host = req.body.host,
@@ -99,6 +133,7 @@ app.post("/dialback", function(req, res, next) {
         nonce = req.body.nonce,
         date = req.body.date,
         url = req.body.url,
+        id = host || webfinger,
         ms;
 
     if (!host || host != config.addclient) {
@@ -123,9 +158,10 @@ app.post("/dialback", function(req, res, next) {
         return;
     }
 
-    if (requests.hasOwnProperty(url) &&
-        requests[url].hasOwnProperty(ms) &&
-        requests[url][ms].indexOf(nonce) !== -1) {
+    if (requests.hasOwnProperty(id) &&
+        requests[id].hasOwnProperty(url) &&
+        requests[id][url].hasOwnProperty(ms) &&
+        requests[id][url][ms].indexOf(nonce) !== -1) {
         res.status(200).send("OK");
         return;
     } else {
@@ -163,15 +199,9 @@ var dialbackCall = function(endpoint, params, callback) {
             randomString(4, this);
         },
         function(err, str) {
-            var options, mod, cb = this;
+            var options, mod, cb = this, id = config.addclient;
             if (err) throw err;
-            if (!requests.hasOwnProperty(endpoint)) {
-                requests[endpoint] = {};
-            }
-            if (!requests[endpoint].hasOwnProperty(now)) {
-                requests[endpoint][now] = [];
-            }
-            requests[endpoint][now].push(str);
+            saveRequest(config.addclient, endpoint, now, str);
             options = url.parse(endpoint);
             options.method = "POST";
             options.headers = {
