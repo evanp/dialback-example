@@ -82,6 +82,9 @@ var discoverEndpoint = function(fields, callback) {
 var postToEndpoint = function(endpoint, params, callback) {
     var options = url.parse(endpoint);
     options.method = "POST";
+    options.headers = {
+        "content-type": "application/www-url-encoded"
+    };
 
     var mod = (options.protocol == "https://") ? https : http;
 

@@ -162,7 +162,8 @@ var dialbackCall = function(endpoint, params, callback) {
             options.method = "POST";
             options.headers = {
                 authorization: "Dialback host=\"" + config.addclient + "\" nonce=\"" + str + "\"",
-                date: (new Date(now)).toUTCString()
+                date: (new Date(now)).toUTCString(),
+                "content-type": "application/www-url-encoded"
             };
             mod = (options.protocol == "https://") ? https : http;
             var req = mod.request(options, function(res) {
