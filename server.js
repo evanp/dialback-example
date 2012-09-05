@@ -202,10 +202,10 @@ var dialback = function(req, res, next) {
             if (err) {
                 unauthorized();
             } else if (fields.hasOwnProperty("host")) {
-                req.host = fields.host;
+                req.remoteHost = fields.host;
                 next();
             } else if (fields.hasOwnProperty("webfinger")) {
-                req.webfinger = fields.webfinger;
+                req.remoteUser = fields.webfinger;
                 next();
             }
         }
@@ -241,7 +241,7 @@ var add = function(req, res, next) {
         next(err);
     }
 
-    console.log(((req.host) ? req.host : req.webfinger) + " added " + augend + " plus " + addend);
+    console.log(((req.remoteHost) ? req.remoteHost : req.remoteUser) + " added " + augend + " plus " + addend);
 };
 
 app.post('/add', dialback, add);
