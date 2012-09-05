@@ -80,7 +80,9 @@ var discoverEndpoint = function(fields, callback) {
 };
 
 var postToEndpoint = function(endpoint, params, callback) {
-    var options = url.parse(endpoint);
+    var options = url.parse(endpoint),
+        pstring = querystring.stringify(params);
+
     options.method = "POST";
     options.headers = {
         "content-type": "application/www-url-encoded"
@@ -110,7 +112,7 @@ var postToEndpoint = function(endpoint, params, callback) {
         callback(err, null, null);
     });
 
-    req.write(querystring.stringify(params));
+    req.write(pstring);
 
     req.end();
 };
