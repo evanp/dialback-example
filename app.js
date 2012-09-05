@@ -218,7 +218,6 @@ app.configure('development', function(){
 var add = function(req, res, next) {
     var augend, addend;
 
-    console.log(((req.host) ? req.host : req.webfinger) + " added " + augend + " plus " + addend);
 
     try {
         augend = parseInt(req.body.augend, 10);
@@ -227,6 +226,8 @@ var add = function(req, res, next) {
     } catch (err) {
         next(err);
     }
+
+    console.log(((req.host) ? req.host : req.webfinger) + " added " + augend + " plus " + addend);
 };
 
 app.post('/add', dialback, add);
