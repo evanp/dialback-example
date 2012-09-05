@@ -222,7 +222,7 @@ var add = function(req, res, next) {
     try {
         augend = parseInt(req.body.augend, 10);
         addend = parseInt(req.body.addend, 10);
-        res.status(200).send(augend + addend);
+        res.status(200).send("" + augend + addend);
     } catch (err) {
         next(err);
     }
