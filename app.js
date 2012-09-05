@@ -31,13 +31,13 @@ var discoverHostEndpoint = function(host, callback) {
                 return;
             }
             dialbacks = jrd.links.filter(function(link) {
-                return (link.hasOwnProperty("rel") && link.rel == "dialback");
+                return (link.hasOwnProperty("rel") && link.rel == "dialback" && link.hasOwnProperty("href"));
             });
             if (dialbacks.length === 0) {
                 callback(new Error("No dialback links in host-meta for " + host), null);
                 return;
             }
-            callback(null, dialbacks[0]);
+            callback(null, dialbacks[0].href);
         }
     );
 
