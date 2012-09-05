@@ -120,7 +120,7 @@ app.post("/dialback", function(req, res, next) {
     }
 });
 
-function showForm(req, res) {
+function showForm(res, augend, addend, result) {
     res.send("<html>" + 
              "<head>" +
              "<title>Add two numbers</title>" +
@@ -128,9 +128,9 @@ function showForm(req, res) {
              "<body>" +
              "<h1>Add two numbers</h1>" +
              "<form action='/' method='post'>" +
-             "<input type='text' name='augend' size='3'/> + " +
-             "<input type='text' name='addend' size='3'/> = " +
-             "<input type='text' name='result' size='3'/>" +
+             ((augend) ? "<input type='text' name='augend' size='3' value='"+augend+"' /> + " : "<input type='text' name='augend' size='3'/> + ") +
+             ((addend) ? "<input type='text' name='addend' size='3' value='"+addend+"' /> = " : "<input type='text' name='augend' size='3'/> + ") +
+             ((result) ? "<input type='text' name='result' size='3' value='"+result+"' /> = " : "<input type='text' name='result' size='3'/> + ") +
              "<input type='submit' />" +
              "</form>" +
              "</body>" +
