@@ -96,7 +96,7 @@ var postToEndpoint = function(endpoint, params, callback) {
         });
         res.on("end", function() {
             if (res.statusCode < 200 || res.statusCode > 300) {
-                callback(new Error("Error" + res.statusCode + ": " + body), null, null);
+                callback(new Error("Error " + res.statusCode + ": " + body), null, null);
             } else {
                 callback(null, body, res);
             }
