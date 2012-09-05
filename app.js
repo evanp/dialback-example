@@ -168,7 +168,7 @@ var dialback = function(req, res, next) {
         return;
     }
 
-    fields.url = req.originalUrl;
+    fields.url = "http://" + config.addserver + req.originalUrl;
     
     if (req.headers.hasOwnProperty("date")) {
         fields.date = req.headers.date;
