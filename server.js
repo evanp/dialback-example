@@ -138,15 +138,15 @@ var saveRequest = function(id, url, date, nonce) {
 
     var ms = Date.parse(date);
 
-    if (!requests.haveOwnProperty(id)) {
+    if (!requests.hasOwnProperty(id)) {
         requests[id] = {};
     }
 
-    if (!requests[id].haveOwnProperty(url)) {
+    if (!requests[id].hasOwnProperty(url)) {
         requests[id][url] = {};
     }
 
-    if (!requests[id][url].haveOwnProperty(ms)) {
+    if (!requests[id][url].hasOwnProperty(ms)) {
         requests[id][url][ms] = [];
     }
 
@@ -157,9 +157,9 @@ var seenRequest = function(id, url, date, nonce) {
 
     var ms = Date.parse(date);
 
-    return (requests.haveOwnProperty(id) &&
-            requests[id].haveOwnProperty(url) &&
-            requests[id][url].haveOwnProperty(ms) &&
+    return (requests.hasOwnProperty(id) &&
+            requests[id].hasOwnProperty(url) &&
+            requests[id][url].hasOwnProperty(ms) &&
             requests[id][url][ms].indexOf(nonce) !== -1);
 };
 
