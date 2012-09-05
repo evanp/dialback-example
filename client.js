@@ -200,7 +200,7 @@ app.post("/", function(req, res, next) {
         function() {
             dialbackCall(endpoint, {augend: augend, addend: addend}, this);
         },
-        function(err, body, res) {
+        function(err, body, dbres) {
             if (err) {
                 next(err);
             } else {
