@@ -142,7 +142,7 @@ app.get("/", function(req, res, next) {
 });
 
 var dialbackCall = function(endpoint, params, callback) {
-    var now = Date.now();
+    var now = Math.round(Date.now()/1000)*1000;
 
     Step(
         function() {
