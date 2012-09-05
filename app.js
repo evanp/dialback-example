@@ -216,13 +216,13 @@ app.configure('development', function(){
  */
 
 var add = function(req, res, next) {
-    var augend, addend;
-
+    var augend, addend, result;
 
     try {
         augend = parseInt(req.body.augend, 10);
         addend = parseInt(req.body.addend, 10);
-        res.status(200).send("" + augend + addend);
+        result = augend + addend;
+        res.status(200).send("" + result);
     } catch (err) {
         next(err);
     }

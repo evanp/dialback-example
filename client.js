@@ -177,7 +177,7 @@ var dialbackCall = function(endpoint, params, callback) {
                 });
                 res.on("end", function() {
                     if (res.statusCode < 200 || res.statusCode > 300) {
-                        cb(new Error("Error" + res.statusCode + ": " + body), null, null);
+                        cb(new Error("Error " + res.statusCode + ": " + body), null, null);
                     } else {
                         cb(null, body, res);
                     }
