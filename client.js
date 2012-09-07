@@ -205,7 +205,7 @@ var dialbackCall = function(endpoint, params, callback) {
             options = url.parse(endpoint);
             options.method = "POST";
             options.headers = {
-                authorization: "Dialback host=\"" + config.addclient + "\" token=\"" + str + "\"",
+                authorization: "Dialback host=\"" + config.addclient + "\", token=\"" + str + "\"",
                 date: (new Date(now)).toUTCString(),
                 "Content-Type": "application/x-www-form-urlencoded"
             };

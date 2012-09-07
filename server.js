@@ -201,7 +201,7 @@ var dialback = function(req, res, next) {
         },
         parseFields = function(str) {
             var fstr = str.substr(9); // everything after "Dialback "
-            var pairs = fstr.split(/\s+/); // XXX: won't handle blanks inside values well
+            var pairs = fstr.split(/,\s+/); // XXX: won't handle blanks inside values well
             var fields = {};
             pairs.forEach(function(pair) {
                 var kv = pair.split("="),
