@@ -92,7 +92,7 @@ app.get("/lrdd.json", function(req, res) {
 var requests = {
 };
 
-var saveRequest = function(id, endpoint, ms, nonce) {
+var saveRequest = function(id, endpoint, ms, token) {
     if (!requests.hasOwnProperty(id)) {
         requests[id] = {};
     }
@@ -102,7 +102,7 @@ var saveRequest = function(id, endpoint, ms, nonce) {
     if (!requests[id][endpoint].hasOwnProperty(ms)) {
         requests[id][endpoint][ms] = [];
     }
-    requests[id][endpoint][ms].push(nonce);
+    requests[id][endpoint][ms].push(token);
 };
 
 setTimeout(function() {
@@ -130,7 +130,7 @@ app.post("/dialback", function(req, res, next) {
 
     var host = req.body.host,
         webfinger = req.body.webfinger,
-        nonce = req.body.nonce,
+        token = req.body.token,
         date = req.body.date,
         url = req.body.url,
         id = host || webfinger,
@@ -141,8 +141,8 @@ app.post("/dialback", function(req, res, next) {
         return;
     }
 
-    if (!nonce) {
-        res.status(400).send("No nonce");
+    if (!token) {
+        res.status(400).send("No token");
         return;
     }
 
@@ -161,11 +161,11 @@ app.post("/dialback", function(req, res, next) {
     if (requests.hasOwnProperty(id) &&
         requests[id].hasOwnProperty(url) &&
         requests[id][url].hasOwnProperty(ms) &&
-        requests[id][url][ms].indexOf(nonce) !== -1) {
+        requests[id][url][ms].indexOf(token) !== -1) {
         res.status(200).send("OK");
         return;
     } else {
-        res.status(400).send("Not my nonce");
+        res.status(400).send("Not my token");
         return;
     }
 });
@@ -205,7 +205,7 @@ var dialbackCall = function(endpoint, params, callback) {
             options = url.parse(endpoint);
             options.method = "POST";
             options.headers = {
-                authorization: "Dialback host=\"" + config.addclient + "\" nonce=\"" + str + "\"",
+                authorization: "Dialback host=\"" + config.addclient + "\" token=\"" + str + "\"",
                 date: (new Date(now)).toUTCString(),
                 "Content-Type": "application/x-www-form-urlencoded"
             };

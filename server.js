@@ -134,7 +134,7 @@ var postToEndpoint = function(endpoint, params, callback) {
 var requests = {
 };
 
-var saveRequest = function(id, url, date, nonce) {
+var saveRequest = function(id, url, date, token) {
 
     var ms = Date.parse(date);
 
@@ -150,17 +150,17 @@ var saveRequest = function(id, url, date, nonce) {
         requests[id][url][ms] = [];
     }
 
-    requests[id][url][ms].push(nonce);
+    requests[id][url][ms].push(token);
 };
 
-var seenRequest = function(id, url, date, nonce) {
+var seenRequest = function(id, url, date, token) {
 
     var ms = Date.parse(date);
 
     return (requests.hasOwnProperty(id) &&
             requests[id].hasOwnProperty(url) &&
             requests[id][url].hasOwnProperty(ms) &&
-            requests[id][url][ms].indexOf(nonce) !== -1);
+            requests[id][url][ms].indexOf(token) !== -1);
 };
 
 // Clear out old requests every 1 minute
@@ -226,9 +226,9 @@ var dialback = function(req, res, next) {
 
     fields = parseFields(auth);
 
-    // must have a nonce
+    // must have a token
 
-    if (!fields.hasOwnProperty("nonce")) {
+    if (!fields.hasOwnProperty("token")) {
         unauthorized();
         return;
     }
@@ -257,7 +257,7 @@ var dialback = function(req, res, next) {
     if (seenRequest(fields.host || fields.webfinger, 
                     fields.url,
                     fields.date,
-                    fields.nonce)) {
+                    fields.token)) {
         unauthorized();
         return;
     }
@@ -265,7 +265,7 @@ var dialback = function(req, res, next) {
     saveRequest(fields.host || fields.webfinger, 
                 fields.url,
                 fields.date,
-                fields.nonce);
+                fields.token);
 
     Step(
         function() {
